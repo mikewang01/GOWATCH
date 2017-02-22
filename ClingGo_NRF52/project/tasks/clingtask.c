@@ -81,8 +81,9 @@ void cling_init_task(void *pvParameters)
         NVIC_SystemReset();
     } 
 //		void PPG_init();
-	PPG_init();
 		pin_map_init();
+	PPG_init();
+		
 		oled_test();
 		BATT_monitor_process();
  //_nor_flash_spi_test2();

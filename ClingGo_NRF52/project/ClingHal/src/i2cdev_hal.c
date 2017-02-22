@@ -279,6 +279,7 @@ static void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context)
 
 static int write(CLASS(I2CDevHal) *arg, i2c_dev_handle_t hdl, uint8_t *p_buf, size_t size)
 {
+/*if no hanlder provided , then just return error code*/
 				if(hdl == NULL){
 						return -1;
 				}
@@ -291,7 +292,23 @@ static int write(CLASS(I2CDevHal) *arg, i2c_dev_handle_t hdl, uint8_t *p_buf, si
 								APP_ERROR_CHECK(err_code);
 								nrf_drv_twi_enable(&(t->bus_id));
 				}
-        return 1;
+				nrf_drv_twi_xfer_desc_t xfer_des = {
+							    .type = NRF_DRV_TWI_XFER_TX,             ///< Type of transfer.
+									.address = t->dev_address,          ///< Slave address.
+									.primary_length = size,   ///< Number of bytes transferred.
+									.p_primary_buf = p_buf,    ///< Pointer to transferred data.
+				};
+				int result = nrf_drv_twi_xfer(&(t->bus_id), &xfer_des,0);
+				if(result != NRF_SUCCESS){
+						return -1;
+				}
+				result = OS_EVENT_WAIT(twi_res_mgr.bus_busy, OS_MS_2_TICKS(5000));
+				if(result == pdFALSE){
+					/*if event wait timeout event happened*/
+					return -1;
+				}
+				return 0;
+       // ad_spi_transact(hdl, p_txbuf, tx_size, p_rxbuf, rx_size);
 }
 
 
@@ -335,8 +352,36 @@ static int write_read(CLASS(I2CDevHal) *arg, i2c_dev_handle_t hdl, uint8_t *fist
 static int read(CLASS(I2CDevHal) *arg, i2c_dev_handle_t hdl, uint8_t *p_buf, size_t size)
 {
 	
-        //ad_i2c_read(hdl, p_buf, size);
-        return 0;
+      	/*if no hanlder provided , then just return error code*/
+				if(hdl == NULL){
+						return -1;
+				}
+				twi_device_config *t = (twi_device_config*)hdl;
+				if(twi_res_mgr.cur_dev_cfg != t){
+								twi_res_mgr.cur_dev_cfg = t;
+								nrf_drv_twi_disable(&(t->bus_id));
+								nrf_drv_twi_uninit(&(t->bus_id));
+						    int err_code = nrf_drv_twi_init(&(t->bus_id), &t->hw_init, twi_handler, NULL);
+								APP_ERROR_CHECK(err_code);
+								nrf_drv_twi_enable(&(t->bus_id));
+				}
+				nrf_drv_twi_xfer_desc_t xfer_des = {
+							    .type = NRF_DRV_TWI_XFER_RX,             ///< Type of transfer.
+									.address = t->dev_address,          ///< Slave address.
+									.primary_length = size,   ///< Number of bytes transferred.
+									.p_primary_buf = p_buf,    ///< Pointer to transferred data.
+				};
+				int result = nrf_drv_twi_xfer(&(t->bus_id), &xfer_des,0);
+				if(result != NRF_SUCCESS){
+						return -1;
+				}
+				result = OS_EVENT_WAIT(twi_res_mgr.bus_busy, OS_MS_2_TICKS(5000));
+				if(result == pdFALSE){
+					/*if event wait timeout event happened*/
+					return -1;
+				}
+				return 0;
+       // ad_spi_transact(hdl, p_txbuf, tx_size, p_rxbuf, rx_size);
 }
 
 

@@ -21,7 +21,6 @@
 *.so
 *.so.*
 *.dylib
-
 # Executables
 *.elf
 *.bin
@@ -36,9 +35,10 @@
 makefile
 
 #ignored folder
-projects/dk_apps/features/rain_flower/DA14681-00-Debug_QSPI
+ClingGo_NRF52/project/_build
 # Debug files
 *.dSYM/
 *.su
 *.xml
 *.log
+*JLinkLog*

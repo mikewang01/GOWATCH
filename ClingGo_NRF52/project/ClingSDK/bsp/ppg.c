@@ -2,14 +2,15 @@
 #include "main.h"
 #include "i2cdev_hal.h"
 #include "clingtask.h"
-
+#include "ppg_comm.h"
 static EN_STATUSCODE ppg_read_reg(I8U *send_buf, I8U txbytes, I8U *pRegVal ,I8U rxbytes)
 {
 #ifndef _CLING_PC_SIMULATION_
 	  CLASS(I2CDevHal) *p_instance = I2CDevHal_get_instance();
 	  i2c_dev_handle_t t = p_instance->ppg_open(p_instance);
-		int err_code = p_instance->write_read(p_instance, t, send_buf, txbytes, pRegVal, rxbytes);
-		//err_code = p_instance->write_read(p_instance, t, send_buf, 0, pRegVal, rxbytes);
+		//int err_code = p_instance->write(p_instance, t, send_buf, txbytes);
+		//err_code = p_instance->read(p_instance, t, pRegVal, rxbytes);
+	 int err_code = p_instance->write_read(p_instance, t, send_buf, txbytes, pRegVal, rxbytes);
 		p_instance->close(p_instance);
 
 #endif
@@ -23,8 +24,8 @@ static BOOLEAN ppg_write_reg(I8U *send_buf, I8U txbytes, I8U *pRegVal , I8U data
 	  i2c_dev_handle_t t = p_instance->ppg_open(p_instance);
 	  memcpy(BUFF, send_buf ,txbytes);
 	  memcpy(BUFF+txbytes , pRegVal ,databytes);
-	  txbytes= txbytes +databytes;	
-		int err_code = p_instance->write_read(p_instance, t, send_buf, txbytes, pRegVal, 0);
+	  txbytes= txbytes + databytes;	
+		int err_code = p_instance->write(p_instance, t, BUFF, txbytes);
 		p_instance->close(p_instance);
 
 #endif
@@ -390,18 +391,38 @@ static BOOLEAN ppg_write_reg(I8U *send_buf, I8U txbytes, I8U *pRegVal , I8U data
 
 //	return proxData;
 //}
-	I8U buf[7];
+	I8U buf[64];
 void PPG_init()
 {
-uint8_t cmd = 0x00;
-ppg_read_reg(&cmd, 1, buf ,4);
-	
-	
-}
+//	pin_set_low(GPIO_PPG_ON);
+//	BASE_delay_msec(100);
+//		uint32_t cmd = 0x40000020;
+//	uint8_t cmd2[] = {0x40,0x00,0x00,0x00};
+//		int i = 0;
+//		 uint32_t data = 0x00000003;
+//	  ppg_write_reg((uint8_t *)&cmd, sizeof(cmd), (uint8_t *)&data, sizeof(data));
+//   	ppg_read_reg((uint8_t *)&cmd, sizeof(cmd), buf ,4);
+
+////		buf[i++] = 0x01;
+////		buf[i++] = 0x01;
+////		buf[i++] = 0x01;
+////		buf[i++] = 0x01;
+//	// cmd = 0x40000060;
+//	// data = (1<<17);
+//	
+//	
+//  //		ppg_write_reg((uint8_t *)&cmd, sizeof(cmd), (uint8_t *)&data, sizeof(data));
+// //  		ppg_read_reg((uint8_t *)&cmd, sizeof(cmd), buf ,4);
+
+//	  cmd = 0x40010008;
+//	  ppg_read_reg((uint8_t *)&cmd, sizeof(cmd), buf ,4);
+as7000Info_t infoRecord;
+comOpen ( &infoRecord );
+ }
 
 //void PPG_state_machine()
 //{
-//	HEARTRATE_CTX *h = &cling.hr;
+//	HEARTRATE_CTX *h = &cling.hr; 
 //	I32U t_curr, t_diff, t_threshold, t_sec;
 
 //	if (OTA_if_enabled()) {

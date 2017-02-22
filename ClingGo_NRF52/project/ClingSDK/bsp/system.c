@@ -436,7 +436,7 @@ void SYSTEM_CLING_init(TASK_HANDLE_SETS *sets)
 //void pin_map_init(void);
     CLING_global_init();
 		pin_map_init();
-		//BATT_charging_init();
+		BATT_charging_init();
     RTC_Init();
 
 //    // Accelerometer init
