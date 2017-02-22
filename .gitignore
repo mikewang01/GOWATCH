@@ -1,0 +1,45 @@
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.elf
+*.bin
+*.map
+*.img
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+#Makefike files
+*.mk
+makefile
+
+#ignored folder
+projects/dk_apps/features/rain_flower/DA14681-00-Debug_QSPI
+# Debug files
+*.dSYM/
+*.su
+*.xml
+*.log
