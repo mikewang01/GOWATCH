@@ -394,8 +394,10 @@ static BOOLEAN ppg_write_reg(I8U *send_buf, I8U txbytes, I8U *pRegVal , I8U data
 	I8U buf[64];
 void PPG_init()
 {
-//	pin_set_low(GPIO_PPG_ON);
-//	BASE_delay_msec(100);
+	pin_set_high(GPIO_PPG_ON);
+	BASE_delay_msec(40);
+	pin_set_low(GPIO_PPG_ON);
+	BASE_delay_msec(250);
 //		uint32_t cmd = 0x40000020;
 //	uint8_t cmd2[] = {0x40,0x00,0x00,0x00};
 //		int i = 0;
@@ -418,6 +420,7 @@ void PPG_init()
 //	  ppg_read_reg((uint8_t *)&cmd, sizeof(cmd), buf ,4);
 as7000Info_t infoRecord;
 comOpen ( &infoRecord );
+pin_set_high(GPIO_PPG_ON);
  }
 
 //void PPG_state_machine()

@@ -95,6 +95,7 @@ typedef enum {
         P36,
         P37,
         P38,
+				P_NOT_USED = 0XFF,
 				AIN_DIASBLE = 0,
 				AIN0,
 				AIN1,
@@ -140,7 +141,12 @@ typedef enum {
 
         GPIO_VIBRATOR_EN = P18,
 
-        GPIO_TOUCH_PWR_EN = P21
+        GPIO_TOUCH_PWR_EN = P21,
+				
+				GPIO_7816_IO = GPIO_UART_DBG_RX,
+				GPIO_7816_CLK = GPIO_UART_DBG_TX,
+				GPIO_7816_RST = P04,
+				GPIO_7816_VCC = P_NOT_USED,//NRF_DRV_SPI_PIN_NOT_USED
 
 } PinName;
 

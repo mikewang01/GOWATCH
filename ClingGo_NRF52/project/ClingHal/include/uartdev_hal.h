@@ -28,7 +28,6 @@ extern "C" {
 
 #include "stdint.h"
 #include "oop_hal.h"
-#include "ad_spi.h"
 #include "pinmap.h"
 
 /*use ext
@@ -44,7 +43,7 @@ extern "C" {
  *
  *
  * */
-
+typedef int (*uart_write_callback)(void *p);
 /*================================type def===============================================*/
 
 typedef void* uart_dev_handle_t;
@@ -53,6 +52,7 @@ typedef void (*uart_user_cb)(void *user_data, uint16_t transferred);
 DEF_CLASS(UartDevHal)
         uart_dev_handle_t (*open)(CLASS(UartDevHal) *arg);
         int (*write)(CLASS(UartDevHal) *arg, spi_dev_handle_t hdl, uint8_t *p_buf,  size_t size);
+				int (*write_asnyc)(CLASS(UartDevHal) *arg, spi_dev_handle_t hdl, uint8_t *p_buf,  size_t size,  uart_write_callback t);
         int (*read)(CLASS(UartDevHal) *arg, spi_dev_handle_t hdl, uint8_t *p_buf,  size_t size, uint16_t timeout);/*blocked read, wait for timeout ms*/
         int (*read_asnyc)(CLASS(UartDevHal) *arg, uart_dev_handle_t hdl, uint8_t *p_buf, size_t size, uart_user_cb cb, void *user_data);
         int (*close)(CLASS(UartDevHal) *arg, spi_dev_handle_t hdl);

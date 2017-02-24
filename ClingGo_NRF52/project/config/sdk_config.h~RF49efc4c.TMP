@@ -1216,7 +1216,7 @@
 // <e> PPI_ENABLED - nrf_drv_ppi - PPI peripheral driver
 //==========================================================
 #ifndef PPI_ENABLED
-#define PPI_ENABLED 1
+#define PPI_ENABLED 0
 #endif
 #if  PPI_ENABLED
 // <e> PPI_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -2321,7 +2321,7 @@
  
 
 #ifndef TIMER4_ENABLED
-#define TIMER4_ENABLED 1
+#define TIMER4_ENABLED 0
 #endif
 
 // <e> TIMER_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -3451,9 +3451,6 @@
 #define SLIP_ENABLED 0
 #endif
 
-#ifndef NFC_HAL_ENABLED
-#define NFC_HAL_ENABLED  1
-#endif
 // <h> app_usbd_cdc_acm - USB CDC ACM class
 
 //==========================================================

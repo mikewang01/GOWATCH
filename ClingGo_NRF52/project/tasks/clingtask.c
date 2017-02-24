@@ -73,6 +73,8 @@ extern void cling_task_output(void *pvParameters);
  
 void  oled_test();
 void BATT_charging_init();
+void nfc_test();
+int fm151_test(void);
 void cling_init_task(void *pvParameters)
 {
     uint32_t nfcpins = (*(uint32_t *)0x1000120C);
@@ -81,44 +83,50 @@ void cling_init_task(void *pvParameters)
         NVIC_SystemReset();
     } 
 //		void PPG_init();
-		pin_map_init();
-	PPG_init();
-		
-		oled_test();
-		BATT_monitor_process();
- //_nor_flash_spi_test2();
-    /*get cling task handle*/
-    Y_SPRINTF("[ClingInit]: create BLE Peripheral task");
+	BATT_charging_init();
+	 // nfc_test();
+	fm151_test();
+//		pin_map_init();
+//	PPG_init();
+//		
+//		oled_test();
+//		BATT_monitor_process();
+// //_nor_flash_spi_test2();
+//    /*get cling task handle*/
+//    Y_SPRINTF("[ClingInit]: create BLE Peripheral task");
 
-        // Sensor Front End - data acquisition
-        // Accelerometer, Key, Touch panel, Battery, Optical sensor, Skin Temperature sensor, UV sensor
-        Y_SPRINTF("[ClingInit]: Create Cling Input task");
-        OS_TASK_CREATE("Cling Input Task", cling_task_input, &task_handles,
-                INPUT_TASK_STACKSIZE, INPUT_TASK_PRIORITY, task_handles.input_handle); /* The task handle. */
-        OS_ASSERT(task_handles.input_handle);
+//        // Sensor Front End - data acquisition
+//        // Accelerometer, Key, Touch panel, Battery, Optical sensor, Skin Temperature sensor, UV sensor
+//        Y_SPRINTF("[ClingInit]: Create Cling Input task");
+//        OS_TASK_CREATE("Cling Input Task", cling_task_input, &task_handles,
+//                INPUT_TASK_STACKSIZE, INPUT_TASK_PRIORITY, task_handles.input_handle); /* The task handle. */
+//        OS_ASSERT(task_handles.input_handle);
 
-        // BLE peripheral task -
-        Y_SPRINTF("[ClingInit]: Create Cling main task");
-        OS_TASK_CREATE("Core Fsm", cling_task_core_fsm, &task_handles,
-                CORE_FSM_TASK_STACKSIZE, CORE_FSM_TASK_PRIORITY, task_handles.cling_core_fsm_handle); /* The task handle. */
-        OS_ASSERT(task_handles.cling_core_fsm_handle);
+//        // BLE peripheral task -
+//        Y_SPRINTF("[ClingInit]: Create Cling main task");
+//        OS_TASK_CREATE("Core Fsm", cling_task_core_fsm, &task_handles,
+//                CORE_FSM_TASK_STACKSIZE, CORE_FSM_TASK_PRIORITY, task_handles.cling_core_fsm_handle); /* The task handle. */
+//        OS_ASSERT(task_handles.cling_core_fsm_handle);
 
-        Y_SPRINTF("[ClingInit]: Create Cling output Task");
-        OS_TASK_CREATE("ClingOutput Task", cling_task_output, &task_handles,
-                OUTPUT_TASK_STACKSIZE, OUTPUT_TASK_PRIORITY, task_handles.output_handle);
-        OS_ASSERT(task_handles.output_handle);
+//        Y_SPRINTF("[ClingInit]: Create Cling output Task");
+//        OS_TASK_CREATE("ClingOutput Task", cling_task_output, &task_handles,
+//                OUTPUT_TASK_STACKSIZE, OUTPUT_TASK_PRIORITY, task_handles.output_handle);
+//        OS_ASSERT(task_handles.output_handle);
 
-    /* Start the BLE Peripheral application task. */
-    OS_TASK_CREATE("BLEPeripheral", /* The text name assigned to the task, for debug only; not used by the kernel. */
-                   ble_peripheral_task, /* The function that implements the task. */
-                   &task_handles, /* The parameter passed to the task. */
-                   BLE_PERIPHERAL_TASK_STACKSIZE, /* The number of bytes to allocate to the stack of the task. */
-                   BLE_PERIPHERAL_TASK_PRIORITY,/* The priority assigned to the task. */
-                   task_handles.ble_handle); /* The task handle. */
-    OS_ASSERT(task_handles.ble_handle);
-    SYSTEM_CLING_init(&task_handles);
-    /* the work of the clingInit task is done */
-    OS_TASK_DELETE(OS_GET_CURRENT_TASK());
+//    /* Start the BLE Peripheral application task. */
+//    OS_TASK_CREATE("BLEPeripheral", /* The text name assigned to the task, for debug only; not used by the kernel. */
+//                   ble_peripheral_task, /* The function that implements the task. */
+//                   &task_handles, /* The parameter passed to the task. */
+//                   BLE_PERIPHERAL_TASK_STACKSIZE, /* The number of bytes to allocate to the stack of the task. */
+//                   BLE_PERIPHERAL_TASK_PRIORITY,/* The priority assigned to the task. */
+//                   task_handles.ble_handle); /* The task handle. */
+//    OS_ASSERT(task_handles.ble_handle);
+//    SYSTEM_CLING_init(&task_handles);
+//    /* the work of the clingInit task is done */
+//    OS_TASK_DELETE(OS_GET_CURRENT_TASK());
+			while(1){
+					OS_DELAY(2000);
+			}
 }
 
 void CLING_global_init()

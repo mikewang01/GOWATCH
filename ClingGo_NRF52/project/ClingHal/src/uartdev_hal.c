@@ -1,4 +1,4 @@
-#include <btle_api.h>
+
 /******************************************************************************
  #include <uartdev_hal>
  #include <uartdev_hal>
@@ -12,16 +12,12 @@
  *     2016/7/22, v1.0 create this file mike.
  *******************************************************************************/
 #include "oop_hal.h"
-//#include "ad_flash.h"
-#include "rtc_hal.h"
 #include "osal.h"
 #include "main.h"
 #include "stdio.h"
 #include "string.h"
 #include "main.h"
 #include "pin_names.h"
-#include "ad_spi.h"
-#include "platform_devices.h"
 #include "uartdev_hal.h"
 #ifdef __cplusplus
 extern "C" {
@@ -30,10 +26,43 @@ extern "C" {
 /*********************************************************************
  * MACROS
  */
+/*
+ * Create local version of I2C bus building block macros before inclusion of platform_devices.h
+ * This allows to create private variables used internally by i2c adapter implementation.
+ */
+#define I2C_DEVICE_DEF(bus_name, name, scl_pin, sda_pin, _address, _addr_mode,  _speed) \
+        const twi_device_config dev_##name = { \
+								.bus_id = NRF_DRV_TWI_INSTANCE(0),\
+								.dev_address = _address,\
+					      .hw_init.scl                = scl_pin,\
+								.hw_init.sda                = sda_pin,\
+								.hw_init.frequency          = _speed,\
+								.hw_init.interrupt_priority = TWI_DEFAULT_CONFIG_IRQ_PRIORITY,\
+								.hw_init.clear_bus_init     = false\
+        }; \
+        const void *const name = &dev_##name;
 
 /*********************************************************************
  * TYPEDEFS
  */
+/*********************************************************************
+ * TYPEDEFS
+ */
+#define HW_UART_ID nrf_drv_uart_t
+typedef struct config {
+        HW_UART_ID bus_id;               /**< bus id as needed by hw_spi_... functions */
+        nrf_drv_uart_config_t hw_init;
+} uart_device_config;
+
+struct twi_resouce{
+		CLASS(I2CDevHal) *p_instance;
+		OS_MUTEX  res_lock;
+		OS_EVENT  bus_busy;
+		uint16_t  ref_count;
+		OS_TASK 	owner;
+		twi_device_config *cur_dev_cfg;/*use to record current device config*/
+};
+#include "flatform_dev.h"
 
 /*********************************************************************
  * GLOBAL VARIABLES
