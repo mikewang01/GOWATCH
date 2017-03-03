@@ -15,8 +15,10 @@ static void _set_reg(I8U reg_idx, I8U config)
         uint8_t i = 0;
         g_spi_tx_buf[i++] = reg_idx;
         g_spi_tx_buf[i++] = config;
+				Y_SPRINTF("[LIS3DH] _get_reg acc_open");
         spi_dev_handle_t t = spi_dev->acc_open(spi_dev);
 				if(t != NULL){
+					Y_SPRINTF("[LIS3DH] _get_reg write_read");
 					spi_dev->write_read(spi_dev, t, g_spi_tx_buf, i, g_spi_rx_buf, i);
 				}
 				spi_dev->close(spi_dev, t);
@@ -27,8 +29,10 @@ static void _get_reg(I8U reg_idx)
         uint8_t i = 0;
         g_spi_tx_buf[i++] = reg_idx | 0x80;
         g_spi_tx_buf[i++] = 0;
+				Y_SPRINTF("[LIS3DH] _get_reg acc_open");
         spi_dev_handle_t t = spi_dev->acc_open(spi_dev);
 				if(t != NULL){
+					Y_SPRINTF("[LIS3DH]  _get_reg write_read");
 					spi_dev->write_read(spi_dev, t, g_spi_tx_buf, i, g_spi_rx_buf, i);
 				}
 				spi_dev->close(spi_dev, t);
@@ -202,10 +206,11 @@ I8U LIS3DH_get_tap()
 
 I8U LIS3DH_get_interrupt()
 {
+				Y_SPRINTF("[LIS3DH] int");
         // Read interrupt
         _get_reg(INT_SRC1);
 
-        N_SPRINTF("[LIS3DH] int: %02x, %d", g_spi_rx_buf[1], CLK_get_system_time());
+        Y_SPRINTF("[LIS3DH] int: %02x, %d", g_spi_rx_buf[1], CLK_get_system_time());
 
         return g_spi_rx_buf[1];
 }

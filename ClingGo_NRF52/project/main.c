@@ -112,13 +112,17 @@ void vApplicationIdleHook( void )
 #include "btle_api.h"
 void cling_init_task(void *params);
 int main(void)
-{
+ {
+	#ifdef NRF52
+    NRF_NVMC->ICACHECNF = NVMC_ICACHECNF_CACHEEN_Enabled << NVMC_ICACHECNF_CACHEEN_Pos;
+#endif
+    NRF_POWER->TASKS_CONSTLAT = 1;
+	
 	  static TaskHandle_t m_ble_stack_thread; 
 		static TaskHandle_t m_logger_thread; 
     ret_code_t err_code;
     err_code = nrf_drv_clock_init();
     APP_ERROR_CHECK(err_code);
-
     // Do not start any interrupt that uses system functions before system initialisation.
     // The best solution is to start the OS before any other initalisation.
 

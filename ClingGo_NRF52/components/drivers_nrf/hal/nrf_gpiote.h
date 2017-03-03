@@ -296,7 +296,7 @@ __STATIC_INLINE void nrf_gpiote_event_clear(nrf_gpiote_events_t event)
     *(uint32_t *)nrf_gpiote_event_addr_get(event) = 0;
 #if __CORTEX_M == 0x04
     volatile uint32_t dummy = *((volatile uint32_t *)nrf_gpiote_event_addr_get(event));
-    (void)dummy;
+    (void)dummy; 
 #endif
 }
 

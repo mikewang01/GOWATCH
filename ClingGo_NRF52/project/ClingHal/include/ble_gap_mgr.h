@@ -51,8 +51,9 @@ struct adv_struct {
 /*class defination header*/
 DEF_CLASS(GapMgr)
         int (*register_task)(OS_TASK p_task);
+				int (*get_mac_addr)(CLASS(GapMgr) *arg, uint8_t *mac_addr, size_t *size);
+				int (*get_model_id)(CLASS(GapMgr) *arg, uint8_t *model_id, size_t *size);
         int (*get_dev_name)(CLASS(GapMgr) *arg, uint8_t *dev_name);
-        int (*set_dev_name)(CLASS(GapMgr) *arg, uint8_t *dev_name);
         int (*init_adv_data)(CLASS(GapMgr) *arg);
         int (*get_dev_id_str)(CLASS(GapMgr) *arg, uint8_t *dev_id, size_t *size);
         int (*switch_2_fast_conn_mode)(CLASS(GapMgr) *arg);

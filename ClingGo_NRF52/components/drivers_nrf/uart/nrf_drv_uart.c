@@ -78,11 +78,13 @@ __STATIC_INLINE void apply_config(nrf_drv_uart_t const * p_instance, nrf_drv_uar
     if (p_config->pseltxd != NRF_UART_PSEL_DISCONNECTED)
     {
         nrf_gpio_pin_set(p_config->pseltxd);
-        nrf_gpio_cfg_output(p_config->pseltxd);
+			  nrf_gpio_cfg(p_config->pseltxd, NRF_GPIO_PIN_DIR_OUTPUT, NRF_GPIO_PIN_INPUT_DISCONNECT, GPIO_PIN_CNF_PULL_Pullup,NRF_GPIO_PIN_S0S1,NRF_GPIO_PIN_NOSENSE);
+			
+       // nrf_gpio_cfg_output(p_config->pseltxd);
     }
     if (p_config->pselrxd != NRF_UART_PSEL_DISCONNECTED)
     {
-        nrf_gpio_cfg_input(p_config->pselrxd, NRF_GPIO_PIN_NOPULL);
+        nrf_gpio_cfg_input(p_config->pselrxd, GPIO_PIN_CNF_PULL_Pullup);
     }
 
     CODE_FOR_UARTE
@@ -280,7 +282,7 @@ void nrf_drv_uart_uninit(const nrf_drv_uart_t * p_instance)
         interrupts_disable(p_instance);
     }
 
-    pins_to_default(p_instance);
+    //pins_to_default(p_instance);
 
     p_cb->state = NRF_DRV_STATE_UNINITIALIZED;
     p_cb->handler = NULL;

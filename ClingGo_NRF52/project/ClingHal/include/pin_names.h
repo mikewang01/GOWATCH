@@ -109,7 +109,7 @@ typedef enum {
 				GPIO_OLED_RST = P31,
 				GPIO_TP_RST = P21,
 				GPIO_OLED_A0 = P02,  // Touch key pin index
-				GPIO_CHG_IN = AIN2,  // BATERY VOLTAGE SAMPLE PIN
+				GPIO_CHG_IN = AIN_DIASBLE,  // BATERY VOLTAGE SAMPLE PIN
  
         /*retarget uart pin group*/
         GPIO_UART_DBG_TX = P22,

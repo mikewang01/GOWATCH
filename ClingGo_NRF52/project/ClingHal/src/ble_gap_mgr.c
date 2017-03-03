@@ -32,17 +32,26 @@ extern "C" {
  * TYPEDEFS
  */
 #define MAX_DEV_NAME_LENGTH  16
-#define DEVICE_RAIN_FLOWER  1
-#if     DEVICE_RAIN_FLOWER
-#define DEVICE_NAME_HEADER  "MBAND "
+#define DEVICE_RAIN_FLOWER   0
+#define DEVICE_CLING_GO_PAY  1
+	
+	
+#if     DEVICE_RAIN_FLOWER > 0
+	#define DEVICE_NAME_HEADER  "RBAND"
+	#define DEVICE_ID_STRING_HEADER "HICR0000"
+	#define  DEVICE_MODEL_ID		"RF0167"
+#elif  DEVICE_CLING_GO_PAY > 0
+	#define DEVICE_NAME_HEADER  "GOPAY"
+	#define DEVICE_ID_STRING_HEADER "HIGP0000"
+	#define  DEVICE_MODEL_ID		"GP0526"
 #endif
 
-#define DEVICE_ID_STRING_HEADER "HICR0000"
+
 
 #define BLE_UUID_WECHAT_SERVICE                                                       0xFEE7
 #define COMPANY_IDENTIFIER                                                            0x0056
 
-#define ADV_SPEED_SWITCH_TIMEOUT      10000  //10s advertisement frequency switch time-out
+#define ADV_SPEED_SWITCH_TIMEOUT      60000  //10s advertisement frequency switch time-out
 #define ADV_FAST_ADV_TIMEOUT_PERIOD   (320)              //x0.625 ms  200ms
 #define ADV_SLOW_ADV_TIMEOUT_PERIOD   (1600)             //x0.625 ms  1000ms
 
@@ -137,8 +146,9 @@ static int adv_switch_to_fast_mode(CLASS(GapMgr) *arg);
 static void adv_timeout_cb(OS_TIMER t);
 static int register_task(OS_TASK p_task);
 static int adv_freq_swicth_process(CLASS(GapMgr) *arg);
-static int set_device_name(CLASS(GapMgr) *arg, uint8_t *name_str);
-static int get_device_mac_addr(CLASS(GapMgr) *arg, uint8_t *mac_p);
+static int set_device_name(CLASS(GapMgr) *arg);
+static int get_device_mac_addr(CLASS(GapMgr) *arg, uint8_t *mac_p, size_t *size);
+static int get_model_id(CLASS(GapMgr) *arg, uint8_t *id_p,  size_t *size);
 int GapMgr_init(CLASS(GapMgr) *arg)
 {
         if (arg == NULL) {
@@ -147,6 +157,7 @@ int GapMgr_init(CLASS(GapMgr) *arg)
         if (OS_MUTEX_CREATE(ble_gap_para_prop.ble_gap_mgr_mutex) == OS_MUTEX_CREATE_FAILED) {
                 return -1;
         }
+				set_device_name(arg);
         /*used to maintain adv switch algrithom*/
         ble_gap_para_prop.ble_timer = OS_TIMER_CREATE("ble_timer",
                 OS_MS_2_TICKS(ADV_SPEED_SWITCH_TIMEOUT), pdTRUE, (void* )0, adv_timeout_cb);
@@ -154,7 +165,6 @@ int GapMgr_init(CLASS(GapMgr) *arg)
         arg->stop_adv = stop_adv;
         arg->init_adv_data = set_adv_data;
         arg->get_dev_id_str = get_device_id_str;
-				arg->set_dev_name = set_device_name;
         arg->disconnect = disconnect;
         arg->event_process = event_process;
         arg->reboot_on_disconnect = reboot_on_diconnect;
@@ -162,7 +172,10 @@ int GapMgr_init(CLASS(GapMgr) *arg)
         arg->switch_2_slow_conn_mode = set_slow_conn_para;
         arg->register_task = register_task;
         arg->adv_freq_swicth_process = adv_freq_swicth_process;
+				arg->get_mac_addr = get_device_mac_addr;
+				arg->get_model_id = get_model_id;
         ble_gap_para_prop.this = arg;
+				
         return 0;
 }
 /******************************************************************************
@@ -497,15 +510,15 @@ static int set_adv_data(CLASS(GapMgr) *arg)
 			return 0;
 }
 
-static int set_device_name(CLASS(GapMgr) *arg, uint8_t *name_str)
+static int set_device_name(CLASS(GapMgr) *arg)
 {
-        if ((name_str) == NULL) {
-                return -1;
-        }																					
+
+				uint8_t *name_str = (uint8_t*)DEVICE_NAME_HEADER;
 				uint8_t  mac_adr[BLE_GAP_ADDR_LEN];
-			  get_device_mac_addr(arg, mac_adr);
+				size_t mac_len;
+			  get_device_mac_addr(arg, mac_adr, &mac_len);
 				memcpy(dev_name, name_str, strlen((char*)name_str));
-				sprintf((char*)&dev_name[strlen((char*)name_str)], " %02X%02X", mac_adr[BLE_GAP_ADDR_LEN - 1], mac_adr[BLE_GAP_ADDR_LEN - 2]);																				
+				sprintf((char*)&dev_name[strlen((char*)name_str)], " %02X%02X", mac_adr[BLE_GAP_ADDR_LEN - 2], mac_adr[BLE_GAP_ADDR_LEN - 1]);																				
 				ble_gap_conn_sec_mode_t sec_mode;
 
 				BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
@@ -523,21 +536,29 @@ static int set_device_name(CLASS(GapMgr) *arg, uint8_t *name_str)
 				return 1;// ble_gap_device_name_set((const char*)dev_name, ATT_PERM_READ);
 }
 
+
+static int get_model_id(CLASS(GapMgr) *arg, uint8_t *model_id, size_t *len)
+{
+        if ((model_id) == NULL) {
+                return -1;
+        }								
+				*len = strlen(DEVICE_MODEL_ID);		
+				memcpy(model_id, DEVICE_MODEL_ID, strlen(DEVICE_MODEL_ID));																				
+				return 1;// ble_gap_device_name_set((const char*)dev_name, ATT_PERM_READ);
+}
+
 static int get_device_id_str(CLASS(GapMgr) *arg, uint8_t *dev_id, size_t *size)
 {
         char mac_addr_str[14];
-      //  if (ble_gap_address_get(&mac_addr) != BLE_STATUS_OK) {
-    //            return -1;
-  //      }
 				uint32_t error_code;
 				ble_gap_addr_t mac_addr;
 				error_code = sd_ble_gap_addr_get(&mac_addr);
 				APP_ERROR_CHECK(error_code);
         /*transfer mac adress from data to string*/
-        sprintf((char*)mac_addr_str, "%02X%02X%02X%02X%02X%02X", mac_addr.addr[5], mac_addr.addr[4],
-                mac_addr.addr[3], mac_addr.addr[2], mac_addr.addr[1], mac_addr.addr[0]);
-				Y_SPRINTF("mac adress = %02X%02X%02X%02X%02X%02X", mac_addr.addr[5], mac_addr.addr[4],
-                mac_addr.addr[3], mac_addr.addr[2], mac_addr.addr[1], mac_addr.addr[0]);
+        sprintf((char*)mac_addr_str, "%02X%02X%02X%02X%02X%02X", mac_addr.addr[0], mac_addr.addr[1],
+                mac_addr.addr[2], mac_addr.addr[3], mac_addr.addr[4], mac_addr.addr[5]);
+				Y_SPRINTF("mac adress = %02X%02X%02X%02X%02X%02X", mac_addr.addr[0], mac_addr.addr[1],
+                mac_addr.addr[2], mac_addr.addr[3], mac_addr.addr[4], mac_addr.addr[5]);
         /*prepare device name string*/
         uint8_t *p = dev_id;
         memcpy(p, DEVICE_ID_STRING_HEADER, strlen(DEVICE_ID_STRING_HEADER));
@@ -548,25 +569,19 @@ static int get_device_id_str(CLASS(GapMgr) *arg, uint8_t *dev_id, size_t *size)
         *size = p - dev_id;
         return 0;
 }
-static int get_device_mac_addr(CLASS(GapMgr) *arg, uint8_t *mac_p)
+static int get_device_mac_addr(CLASS(GapMgr) *arg, uint8_t *mac_p, size_t *len)
 {
-        uint8_t mac_addr_str[14]   __attribute__((unused));
-       // if (ble_gap_address_get(&mac_addr) != BLE_STATUS_OK) {
-     //           return -1;
-   //     }
-				if(mac_p == NULL){
+				if(mac_p == NULL || len ==NULL){
 						return -1; 
 				}
 				uint32_t error_code;
 				ble_gap_addr_t mac_addr;
 				error_code = sd_ble_gap_addr_get(&mac_addr);
 				APP_ERROR_CHECK(error_code);
-				uint8_t *d = mac_addr.addr;
-				for ( uint8_t i = BLE_GAP_ADDR_LEN; i > 0;) {
-						i--;
-						mac_addr_str[BLE_GAP_ADDR_LEN - i - 1] = d[i];
-				}
-				
+				*len = sizeof(mac_addr.addr);
+//				for(int i = 0 ; i < BLE_GAP_ADDR_LEN; i++){
+//						mac_p[i] = mac_addr.addr[BLE_GAP_ADDR_LEN - i - 1]
+//				}
         memcpy(mac_p, mac_addr.addr, sizeof(mac_addr.addr));
         return 0;
 }

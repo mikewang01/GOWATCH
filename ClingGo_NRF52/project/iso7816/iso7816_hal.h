@@ -60,9 +60,13 @@
 #include "iso7816_phy.h"
 #include "nrf_delay.h"
 
+/*since fm151 does not have the ability to supporty stanrd 7816 port*/
+//#define  	__FM151__
+
+
 #define NRF_LOG_PRINTF Y_SPRINTF
 #define NRF_LOG_INIT
-#define NRF_LOG(x)  Y_SPRINTF(x)
+#define NRF_LOG  Y_SPRINTF
 #define NRF_LOG_HEX_CHAR(x)
 /**
  * @defgroup iso7816_hal_const Constants

@@ -224,7 +224,7 @@ const uint16_t iso7816_hal_MaxDi_idx_lut [3][16]
         {2, 2, 2, 3, 3, 4, 4, 1, 1, 2, 3, 3, 4, 4, 1, 1}
     };
 #elif defined(NRF52)
-    #ifdef USE_EASYDMA
+    #if UART_EASY_DMA_SUPPORT
     const uint16_t iso7816_hal_MaxDi_idx_lut [3][16]        // Measured MAX: 250 kbps
         = {
             {7, 7, 7, 7, 7, 7, 7, 1, 1, 7, 7, 7, 7, 7, 1, 1},
@@ -707,9 +707,10 @@ static void sys_fsm (iso7816_hal_sys_fsm_evt_t evt, uint8_t *data, uint16_t len)
 												}else{
 													/* No PPS negociation needs, HAL initialization ready*/
 													m_iso7816_hal.sys_state  = ISO7816_HAL_SYS_FSM_RDY;
-
+#ifndef  	__FM151__ /*according to offcial explanation , this chip do not support FI DI*/
 													/* Apply Fi and Di */
 													iso7816_phy_set_Fi_Di (m_iso7816_hal.Fi, m_iso7816_hal.Di);
+#endif
 													m_iso7816_hal.wt_enabled = false;
 
 													err_code = tpdu_fsm (ISO7816_HAL_TPDU_FSM_EVT_SYS_RDY, 0, 0);
@@ -753,9 +754,10 @@ static void sys_fsm (iso7816_hal_sys_fsm_evt_t evt, uint8_t *data, uint16_t len)
                     {
                         /* The correct PPS response has been received. */
                         m_iso7816_hal.sys_state  = ISO7816_HAL_SYS_FSM_RDY;
-
+#ifndef  	__FM151__ /*according to offcial explanation , this chip do not support FI DI*/
                         /* Apply Fi and Di */
                         iso7816_phy_set_Fi_Di (m_iso7816_hal.Fi, m_iso7816_hal.Di);
+#endif
                         m_iso7816_hal.wt_enabled = false;
 
                         err_code = tpdu_fsm (ISO7816_HAL_TPDU_FSM_EVT_SYS_RDY, 0, 0);
@@ -1108,7 +1110,10 @@ uint32_t iso7816_hal_init (iso7816_hal_init_t *init_param)
 
     err_code = iso7816_phy_init (&phy_init_param);
     VERIFY_SUCCESS(err_code);
+void send_test(uint8_t *p, uint16_t len);
 
+		uint8_t data[10]={0x01,0x02,0x03,0x04,0x05,0x06,0x07};
+		//send_test(data, 9);
     err_code = iso7816_phy_cold_reset ();
     VERIFY_SUCCESS(err_code);
 
@@ -1203,12 +1208,11 @@ uint32_t iso7816_hal_resume (void)
     return err_code;
 }
 
-uint32_t iso7816_hal_uninit (void)
+uint32_t  iso7816_hal_uninit (void)
 {
     uint32_t err_code = NRF_SUCCESS;
 
     err_code = iso7816_phy_uninit ();
-    VERIFY_SUCCESS(err_code);
 
     m_iso7816_hal.sys_state = ISO7816_HAL_SYS_FSM_OFF;
     return err_code;

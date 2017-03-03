@@ -61,7 +61,7 @@ pm_id_t pm_register_adapter(const adapter_call_backs_t *cb)
     pm_id_t ret = -1;
     int i = 0;
 
-    OS_ASSERT(cb != NULL);
+    ASSERT_WARNING(cb != NULL);
 
     while ((i < dg_configPM_MAX_ADAPTERS_CNT) && (pm_adapters_cb[i] != NULL)) {
         i++;
@@ -72,15 +72,15 @@ pm_id_t pm_register_adapter(const adapter_call_backs_t *cb)
         ret = i;
     }
 
-    OS_ASSERT(ret != -1);                      // Increase dg_configPM_MAX_ADAPTERS_CNT
+    ASSERT_WARNING(ret != -1);                      // Increase dg_configPM_MAX_ADAPTERS_CNT
     return ret;
 }
 
 void pm_unregister_adapter(pm_id_t id)
 {
 
-    OS_ASSERT((id >= 0) && (id < dg_configPM_MAX_ADAPTERS_CNT));     // Is id valid?
-    OS_ASSERT(pm_adapters_cb[id] != NULL);     // Is it registered?
+    ASSERT_WARNING((id >= 0) && (id < dg_configPM_MAX_ADAPTERS_CNT));     // Is id valid?
+    ASSERT_WARNING(pm_adapters_cb[id] != NULL);     // Is it registered?
     pm_adapters_cb[id] = NULL;
 }
 

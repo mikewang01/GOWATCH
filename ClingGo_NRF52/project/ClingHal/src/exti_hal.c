@@ -57,8 +57,8 @@ static CLASS(HalExti)* p_instance = NULL;
 */
 static const struct exti_pin_mgr wu_pins[]={
         {.pin = ACC_SENSOR_INT, .enable = false, .pull = GPIO_PIN_CNF_PULL_Disabled, .trigger_level = NRF_GPIOTE_POLARITY_HITOLO},/*cpresponded interrupt is disabled default which means  you gonna need call enbale function independly*/
-        {.pin = GPIO_TOUCH_INT, .enable = false, .pull = GPIO_PIN_CNF_PULL_Pullup, .trigger_level = NRF_GPIOTE_POLARITY_HITOLO},
-				{.pin = GPIO_CHG_IRQ, .enable = false, .pull = GPIO_PIN_CNF_PULL_Pullup, .trigger_level = NRF_GPIOTE_POLARITY_HITOLO},
+       // {.pin = GPIO_TOUCH_INT, .enable = false, .pull = GPIO_PIN_CNF_PULL_Pullup, .trigger_level = NRF_GPIOTE_POLARITY_HITOLO},
+				//{.pin = GPIO_CHG_IRQ, .enable = false, .pull = GPIO_PIN_CNF_PULL_Pullup, .trigger_level = NRF_GPIOTE_POLARITY_HITOLO},
 };
 
 static void (*pin_int_callback)(PinName pin) = NULL;

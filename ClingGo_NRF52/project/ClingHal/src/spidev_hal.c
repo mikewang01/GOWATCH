@@ -161,19 +161,33 @@ static int open(CLASS(SpiDevHal) *arg)
 {
 				int ret  = 0;
 				/*resouce has been taken*/
-				if(spi_res_mgr.ref_count > 0){
+				//if(spi_res_mgr.ref_count > 0){
 						/*this means same task request resource here*/
 						if(OS_GET_CURRENT_TASK() == spi_res_mgr.owner){
-								spi_res_mgr.ref_count ++;
-						}else{
 								OS_MUTEX_GET(spi_res_mgr.res_lock, OS_MUTEX_FOREVER);
+								OS_ENTER_CRITICAL_SECTION();
+								spi_res_mgr.ref_count ++;
+					  			OS_LEAVE_CRITICAL_SECTION();
+						}else{
+							void compare_task(uint32_t *data);
+							  //compare_task(OS_GET_CURRENT_TASK());
+							 // compare_task(spi_res_mgr.owner);
+								//Y_SPRINTF("[spi hal]: waiting for spi resource from 0x%08x  owned by 0x%08x coutn = %d", (uint32_t)OS_GET_CURRENT_TASK(), (uint32_t)spi_res_mgr.owner, spi_res_mgr.ref_count);
+								OS_MUTEX_GET(spi_res_mgr.res_lock, OS_MUTEX_FOREVER);
+								//Y_SPRINTF("[spi hal]: wait for spi resource end");
+							  OS_ENTER_CRITICAL_SECTION();
+							  spi_res_mgr.owner = OS_GET_CURRENT_TASK();
+								spi_res_mgr.ref_count ++;
+								OS_LEAVE_CRITICAL_SECTION();
 								//ret = -1;
+		//				}
+		//		}else{
+		//			
+			//			OS_MUTEX_GET(spi_res_mgr.res_lock, OS_MUTEX_FOREVER);
+		//				spi_res_mgr.owner = OS_GET_CURRENT_TASK();
+		//				spi_res_mgr.ref_count ++;
+	//			}
 						}
-				}else{
-						OS_MUTEX_GET(spi_res_mgr.res_lock, OS_MUTEX_FOREVER);
-						spi_res_mgr.owner = OS_GET_CURRENT_TASK();
-						spi_res_mgr.ref_count ++;
-				}
         return ret;//ad_spi_open(dev_id);
 }
 #if IS_SPI_ACC_SENSOR_SUPPORTED
@@ -267,12 +281,12 @@ static int close(CLASS(SpiDevHal) *arg, spi_dev_handle_t hdl)
 				int ret  = 0;
 				/*resouce has been taken*/
 				if(spi_res_mgr.ref_count > 0){
+					  OS_ENTER_CRITICAL_SECTION();
 						spi_res_mgr.ref_count --;
+						spi_res_mgr.owner = NULL;
 						/*this means same task request resource here*/
-						if(spi_res_mgr.ref_count == 0){
-								//spi_res_mgr.ref_count ++;
-								OS_MUTEX_PUT(spi_res_mgr.res_lock);
-						}
+						OS_MUTEX_PUT(spi_res_mgr.res_lock);
+						OS_LEAVE_CRITICAL_SECTION();
 				}
         return ret;//ad_spi_open(dev_id);			
 }

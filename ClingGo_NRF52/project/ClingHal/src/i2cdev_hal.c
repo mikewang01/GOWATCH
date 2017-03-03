@@ -180,7 +180,9 @@ static int open(CLASS(I2CDevHal) *arg)
 						if(OS_GET_CURRENT_TASK() == twi_res_mgr.owner){
 								twi_res_mgr.ref_count ++;
 						}else{
+							  Y_SPRINTF("[twi hal]: waiting for spi resource from 0x%08x  owned by 0x%08x count = %d", (uint32_t)OS_GET_CURRENT_TASK(), (uint32_t)twi_res_mgr.owner, twi_res_mgr.ref_count );
 								OS_MUTEX_GET(twi_res_mgr.res_lock, OS_MUTEX_FOREVER);
+							Y_SPRINTF("[spi hal]: wait for spi resource end");
 								//ret = -1;
 						}
 				}else{

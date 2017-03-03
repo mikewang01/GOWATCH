@@ -1,5 +1,5 @@
-#ifndef __FM1280_H__
-#define __FM1280_H__
+#ifndef __fm151_H__
+#define __fm151_H__
 
 #include "standards.h"
 #include "stdint.h"
@@ -80,11 +80,11 @@ typedef struct tagISO7816_CTX {
 
 extern void ISO7816_Init(void);
 extern void ISO7816_command_process(ISO7816_OPERATION op_code, I8U *pBuf, I16U *len);
-extern int fm1280_reg_response_callback(int (*p)(void*data, uint16_t length) );
-extern int active_fm1280(void);
-extern int deactive_fm1280(void);
+extern int fm151_reg_response_callback(int (*p)(void*data, uint16_t length) );
+extern int active_fm151(void);
+extern int deactive_fm151(void);
 
-struct fm1280_adapter_call_backs {
+struct fm151_adapter_call_backs {
     int (*init)(void);
     int (*core_fsm)(void *p_dr);
     int (*rx_cb)(void *p_dr, uint16_t length);

@@ -354,11 +354,11 @@ static void handle_write_req(uint16_t handle, uint8_t *p_data, uint16_t size)
 {
         cling_service_t *dbgs = (cling_service_t *)&svc;
 				ble_service_t *ble_dbgs = &svc.svc;
-        Y_SPRINTF("[ble cust]: handle write handle = %d number = %d\r\n", handle, sizeof(dbgs->cp_ccc_h) / sizeof(dbgs->cp_ccc_h[0]));
+        N_SPRINTF("[ble cust]: handle write handle = %d number = %d\r\n", handle, sizeof(dbgs->cp_ccc_h) / sizeof(dbgs->cp_ccc_h[0]));
 
         /*check for notification enable event*/
         for (int i = 0; i < (HICLING_NOTIFY_END_POINT_UUID_16 - HICLING_NOTIFY1_POINT_UUID_16); i++) {
-                Y_SPRINTF("[ble cust]: current ccc hanle value = %d\r\n", dbgs->cling_handles[i].cccd_handle);
+                N_SPRINTF("[ble cust]: current ccc hanle value = %d\r\n", dbgs->cling_handles[i].cccd_handle);
                 if (handle == dbgs->cling_handles[i].cccd_handle) {
 
                         return;
@@ -369,14 +369,14 @@ static void handle_write_req(uint16_t handle, uint8_t *p_data, uint16_t size)
         for (int i = 0; i < (HICLING_WRITE_END_POINT_UUID_16 - HICLING_NOTIFY1_POINT_UUID_16); i++) {
 //                N_SPRINTF("[ble cust]: current  cp_val_h value = %d\r\n", dbgs->cp_val_h[i]);
                 if (handle == dbgs->cling_handles[i].value_handle) {
-                        Y_SPRINTF("[ble cust]: current  cp_val_h value = %d\r\n", dbgs->cling_handles[i].value_handle);
+                        N_SPRINTF("[ble cust]: current  cp_val_h value = %d\r\n", dbgs->cling_handles[i].value_handle);
                         /*pass data to user space*/
                         if (ble_write_callback_p != NULL) {
                                 ble_write_callback_p(ble_dbgs, dbgs->conn_handle,
                                         uuid_check_table[handle - dbgs->cling_handles[0].value_handle],
                                         (uint8_t*)p_data, size);
                         }
-                        Y_SPRINTF("[ble cust]: handle write data = %d lenth %d uuid = 0x%04x\r\n",
+                        N_SPRINTF("[ble cust]: handle write data = %d lenth %d uuid = 0x%04x\r\n",
                                 p_data[0], size, uuid_check_table[handle - dbgs->cling_handles[0].value_handle]);
                        // status = ATT_ERROR_OK;
                 }
@@ -458,7 +458,7 @@ static void tx_send(uint16_t handle_num, uint8_t *str , uint16_t len)
     UNLOCK_BUFFER();
     //connected_pc_tool
     //????
-		Y_SPRINTF("[ble uico]: m_tx_insert_index = %d", m_tx_insert_index);
+		N_SPRINTF("[ble uico]: m_tx_insert_index = %d", m_tx_insert_index);
     tx_buffer_process(dbgs);
 }
 
@@ -523,7 +523,7 @@ static void tx_buffer_process(cling_service_t * p_bas)
                 hvx_params.offset = 0;//20-lenth-1;//gatts_value.offset;
                 hvx_params.p_len  = &(gatts_value.len);
                 hvx_params.p_data = gatts_value.p_value;
-                Y_SPRINTF("[ble_pay]: data lenth = %d..\r\n", *(hvx_params.p_len));
+                N_SPRINTF("[ble_pay]: data lenth = %d..\r\n", *(hvx_params.p_len));
                 err_code = sd_ble_gatts_hvx(m_tx_buffer[m_tx_index].conn_handle, &hvx_params);
                 //err_code = sd_ble_gatts_hvx(m_tx_buffer[m_tx_index].conn_handle, &hvx_params);
             }
@@ -532,7 +532,7 @@ static void tx_buffer_process(cling_service_t * p_bas)
         if(err_code == NRF_SUCCESS) {
             N_SPRINTF("[ble_pay]: SD Read/Write API returns Success..\r\n");
             m_tx_index++;
-				  	Y_SPRINTF("[ble_pay]: tx sucess m_tx_index = %d", m_tx_index);
+				  	N_SPRINTF("[ble_pay]: tx sucess m_tx_index = %d", m_tx_index);
             if(m_tx_index >= TX_BUFFER_MASK){
 								m_tx_index = 0;
 						}

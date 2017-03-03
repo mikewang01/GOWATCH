@@ -1683,7 +1683,7 @@ BaseType_t xAlreadyYielded = pdFALSE;
 	tasks from this list into their appropriate ready list. */
 	taskENTER_CRITICAL();
 	{
-		--uxSchedulerSuspended;
+  		--uxSchedulerSuspended;
 
 		if ( uxSchedulerSuspended == ( UBaseType_t ) pdFALSE )
 		{

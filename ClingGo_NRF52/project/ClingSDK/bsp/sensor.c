@@ -324,11 +324,11 @@ void SENSOR_accel_processing()
 
 	int_source = LIS3DH_get_interrupt();
 	if (cling.lps.b_low_power_mode) {
-	        N_SPRINTF("LIS3DH: ... 2 ... ");
+	        Y_SPRINTF("LIS3DH: ... 2 ... ");
 		// Software motion detection
 		_low_power_process_hw(int_source);
 	} else {
-                N_SPRINTF("LIS3DH: ... 3 ... ");
+                Y_SPRINTF("LIS3DH: ... 3 ... ");
 		// INT2 (accelerometer data ready),
 		_high_power_process_FIFO();
 	}

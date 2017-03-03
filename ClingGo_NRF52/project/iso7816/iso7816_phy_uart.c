@@ -331,6 +331,10 @@ static uint32_t clk_cleanup ()
     nrf_drv_timer_disable (&m_iso7816_phy.high_freq_timer);
     nrf_drv_gpiote_out_uninit (m_iso7816_phy.clk_pin);
     nrf_drv_ppi_channel_free (m_iso7816_phy.high_freq_ppi);
+	  nrf_drv_ppi_channel_free (m_iso7816_phy.io_ppi_rx_end);
+	  nrf_drv_ppi_channel_free (m_iso7816_phy.io_ppi_timer_resume);
+  	nrf_drv_ppi_channel_free (m_iso7816_phy.io_ppi_tx_end_suspend);
+	  nrf_drv_ppi_channel_free (m_iso7816_phy.io_ppi_tx_end_timer_start);
     return NRF_SUCCESS;
 }
 
@@ -346,7 +350,8 @@ static uint32_t clk_cleanup ()
 /**@brief Set I/O pin as input */
 static void io_set_input ()
 {
-    nrf_gpio_cfg_input (m_iso7816_phy.io_pin, NRF_GPIO_PIN_PULLUP);
+   // nrf_gpio_cfg_input (m_iso7816_phy.io_pin, NRF_GPIO_PIN_PULLUP);
+	nrf_gpio_cfg(m_iso7816_phy.io_pin, NRF_GPIO_PIN_DIR_INPUT, NRF_GPIO_PIN_INPUT_CONNECT, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_S0H1, NRF_GPIO_PIN_NOSENSE);
 }
 
 
@@ -381,7 +386,8 @@ static void gpio_init ()
     nrf_gpio_pin_clear (m_iso7816_phy.vcc_pin);
     
     /* CLK */
-    nrf_gpio_cfg_output (m_iso7816_phy.clk_pin);
+	 nrf_gpio_cfg(m_iso7816_phy.clk_pin, NRF_GPIO_PIN_DIR_OUTPUT, NRF_GPIO_PIN_INPUT_DISCONNECT, GPIO_PIN_CNF_PULL_Pullup,NRF_GPIO_PIN_S0S1,NRF_GPIO_PIN_NOSENSE);
+   // nrf_gpio_cfg_output (m_iso7816_phy.clk_pin);
     nrf_gpio_pin_clear (m_iso7816_phy.clk_pin);
     
     /* RST */
@@ -745,6 +751,8 @@ static uint32_t low_freq_timer_init ()
 /**@brief Clear low_frequency timer */
 static void low_freq_timer_clear ()
 {
+	
+	
     nrf_drv_timer_clear(&m_iso7816_phy.low_freq_timer);
 }
 
@@ -955,6 +963,7 @@ static uint32_t uart_enable_rx (void)
     m_iso7816_phy.uart_config.pselrxd = m_iso7816_phy.io_pin;
 
     err_code = nrf_drv_uart_init((const nrf_drv_uart_t *)&(m_iso7816_phy.iso7816_uart_instance), &m_iso7816_phy.uart_config, on_uart_evt);
+		Y_SPRINTF("[uart]: error code %d", err_code);
     VERIFY_SUCCESS(err_code);
 
     err_code = nrf_drv_ppi_channel_enable (m_iso7816_phy.io_ppi_rx_end);
@@ -1027,21 +1036,22 @@ static uint32_t uart_disable (void)
 
     /* Disable all post-Tx & post-Rx PPI channels. */
     err_code = nrf_drv_ppi_channel_disable (m_iso7816_phy.io_ppi_rx_end);
-    VERIFY_SUCCESS(err_code);
+    //VERIFY_SUCCESS(err_code);
 
     err_code = nrf_drv_ppi_channel_disable (m_iso7816_phy.io_ppi_tx_end_suspend);
-    VERIFY_SUCCESS(err_code);
+    //VERIFY_SUCCESS(err_code);
 
     err_code = nrf_drv_ppi_channel_disable (m_iso7816_phy.io_ppi_tx_end_timer_start);
-    VERIFY_SUCCESS(err_code);
+    //VERIFY_SUCCESS(err_code);
 
     err_code = nrf_drv_ppi_channel_disable (m_iso7816_phy.io_ppi_timer_resume);
-    VERIFY_SUCCESS(err_code);
+    //VERIFY_SUCCESS(err_code);
 
     /* Disable post RX timer interrupt. */
     nrf_drv_timer_extended_compare (&m_iso7816_phy.low_freq_timer, (nrf_timer_cc_channel_t) ISO7816_PHY_TIMER_CH_RX_END,
                                     0, (nrf_timer_short_mask_t)0, false);
 
+		Y_SPRINTF("[phy_uart]: uninit");
     nrf_drv_uart_uninit((const nrf_drv_uart_t *)&(m_iso7816_phy.iso7816_uart_instance));
 
     m_iso7816_phy.tx_enabled  = false;
@@ -1188,7 +1198,7 @@ uint32_t iso7816_phy_init (iso7816_phy_init_t *init_param)
 
     m_iso7816_phy.baudrate = ((1 << (int)m_iso7816_phy.clk_freq) * 1000000
                               * m_iso7816_phy.Di * ISO7816_PHY_UART_BAUDRATE_RATIO)
-                             / m_iso7816_phy.Fi;
+                             / m_iso7816_phy.Fi;//10735
 
     m_iso7816_phy.rx_buff     = &m_iso7816_phy.rx_data_internal;
     m_iso7816_phy.rx_buff_len = 1;
@@ -1324,14 +1334,14 @@ uint32_t iso7816_phy_set_coding (bool direct)
 
 void iso7816_phy_set_Fi_Di (uint16_t Fi, uint8_t Di)
 {
-    m_iso7816_phy.Fi     = Fi;
-    m_iso7816_phy.Di     = Di;
-    m_iso7816_phy._1_etu = Fi / Di;
+//    m_iso7816_phy.Fi     = Fi;
+//    m_iso7816_phy.Di     = Di;
+//    m_iso7816_phy._1_etu = Fi / Di;
 
-    uint64_t i = ((1 << (uint8_t)m_iso7816_phy.clk_freq)) * 1000000 * (uint64_t)m_iso7816_phy.Di * ISO7816_PHY_UART_BAUDRATE_RATIO;
-    m_iso7816_phy.baudrate = i / m_iso7816_phy.Fi;
-
-    m_iso7816_phy.uart_config.baudrate = (nrf_uart_baudrate_t)m_iso7816_phy.baudrate;
+//    uint64_t i = ((1 << (uint8_t)m_iso7816_phy.clk_freq)) * 1000000 * (uint64_t)m_iso7816_phy.Di * ISO7816_PHY_UART_BAUDRATE_RATIO;
+//    m_iso7816_phy.baudrate = i / m_iso7816_phy.Fi;
+////124797
+//    m_iso7816_phy.uart_config.baudrate = (nrf_uart_baudrate_t)m_iso7816_phy.baudrate;
 }
 
 
@@ -1428,10 +1438,14 @@ uint32_t iso7816_phy_deactivate (void)
     nrf_gpio_pin_clear (m_iso7816_phy.vcc_pin);     // Vcc=0
     DBG_SIGNAL();
 
+			/* Need to disable UART first if Rx is active. */
+		err_code = uart_disable ();
+	
     /* Release SDK resources */
     clk_cleanup ();
     timers_cleanup ();
 
+	
     m_iso7816_phy.sys_state = ISO7816_PHY_SYS_FSM_DISABLED;
     return err_code;
 }
@@ -1442,14 +1456,18 @@ uint32_t iso7816_phy_uninit (void)
     uint32_t err_code = NRF_SUCCESS;
 
     err_code = iso7816_phy_deactivate ();
-    VERIFY_SUCCESS(err_code);
 
     err_code = dbg_cleanup ();
-    VERIFY_SUCCESS(err_code);
 
     return err_code;
 }
 
+void send_test(uint8_t *p, uint16_t len)
+{
+				iso7816_phy_tx_enable ();
+				iso7816_phy_send (p, len);
+
+}
 
 /** @} */ // End tag for iso7816_phy_uart
 

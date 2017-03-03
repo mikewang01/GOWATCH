@@ -16,7 +16,7 @@
 #include "ble_gap_mgr.h"
 #include"osal.h"
 
-#define _SKIP_LINK_
+//#define _SKIP_LINK_
 
 //#define AUTO_AUTHENTICATE 1
 

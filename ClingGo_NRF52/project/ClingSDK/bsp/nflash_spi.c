@@ -2,6 +2,14 @@
 #include "spidev_hal.h"
 #include "nflash_spi.h"
 
+#define WAITING_TIME_MINUM_UNIT   20//ms
+#define STATUS_BYTES_WRITE_TIME  10//ms
+#define BYTE_PROGRAM_TIME       30//us
+#define SECTOR_ERASE_TIME       40//MS
+#define BLOCK_ERASE_TIME_32K	  120 //ms
+#define BLOCK_ERASE_TIME_64K	  150 //ms
+#define CHIP_ERASE_TIME	    25000 //S
+
 uint8_t g_spi_tx_buf[10];
 uint8_t g_spi_rx_buf[10];
 
@@ -44,22 +52,23 @@ void NOR_init(void)
 #endif
 }
 
-void _wait_for_operation_completed()
+// time2wait in ms
+static void _wait_for_operation_completed(uint32_t time_2_wait)
 {
 #ifndef _CLING_PC_SIMULATION_
 	I32U count = 0;
 	I8U ret;
-	
+	time_2_wait = time_2_wait < WAITING_TIME_MINUM_UNIT?WAITING_TIME_MINUM_UNIT:time_2_wait;
 	if (b_flash_PD_flag) {
 		b_flash_PD_flag = FALSE;
 		NOR_releasePowerDown();
 	}
-	// Maximum delay 2 seconds
-	for (count = 0; count < 2000; count ++) {
+	// EXTEND TIME TO TIMES TIPICAL TIME SO TO TIMOUT SUCESSFULLR
+	for (count = 0; count < 10; count ++) {
+		BASE_delay_msec(time_2_wait);
 		ret = NOR_readStatusRegister();
-		
 		if (ret & SPI_FLASH_WIP) {
-			BASE_delay_msec(1);
+			BASE_delay_msec(time_2_wait);
 		} else {
 			break;
 		}
@@ -87,7 +96,7 @@ void NOR_writeEnable(void)
 	N_SPRINTF("[spi] 1624");
 	flash_tx_rx(SPI_MASTER_0, g_spi_tx_buf, 1 ,g_spi_rx_buf,0, GPIO_SPI_0_CS_NFLASH);
 #endif
-	_wait_for_operation_completed();
+	_wait_for_operation_completed(STATUS_BYTES_WRITE_TIME);
 }
 
 void NOR_writeDisable(void)
@@ -169,18 +178,19 @@ static void _page_program_core(I32U addr, I16U len, I8U *data)
 
 		NOR_writeEnable();
 		
-		g_spi_tx_buf[0] = SPI_FLASH_INS_PP;
-		g_spi_tx_buf[1] = (uint8_t)(addr >> 16);
-		g_spi_tx_buf[2] = (uint8_t)(addr >> 8);
-		g_spi_tx_buf[3] = (uint8_t)(addr);
+		uint16_t i = 0;
+		g_spi_tx_buf[i++] = SPI_FLASH_INS_PP;
+		g_spi_tx_buf[i++] = (uint8_t)(addr >> 16);
+		g_spi_tx_buf[i++] = (uint8_t)(addr >> 8);
+		g_spi_tx_buf[i++] = (uint8_t)(addr);
 	  uint8_t tx_data[65*4];
-	  memcpy(tx_data,g_spi_tx_buf,4);
+	  memcpy(tx_data,g_spi_tx_buf,i);
 	  memcpy(&tx_data[4],data,len);	
-	
+	  i = i+len;
 #ifndef _CLING_PC_SIMULATION_
 		flash_tx_rx(SPI_MASTER_0, (I8U *)tx_data, len + 4, g_spi_rx_buf,0, GPIO_SPI_0_CS_NFLASH);
 #endif
-		_wait_for_operation_completed();
+		_wait_for_operation_completed(i*BYTE_PROGRAM_TIME/1000);
 	
 	if (!OTA_if_enabled()){
 	  if (!b_flash_PD_flag) {
@@ -257,7 +267,7 @@ void NOR_erase_block_4k(I32U addr)
 	flash_tx_rx(SPI_MASTER_0, g_spi_tx_buf, 4, g_spi_rx_buf,  0, GPIO_SPI_0_CS_NFLASH);
 #endif
 	//wait for the operation finished
-	_wait_for_operation_completed();
+	_wait_for_operation_completed(SECTOR_ERASE_TIME);
 	
 	if (!OTA_if_enabled()){
 	  if (!b_flash_PD_flag) {
@@ -294,7 +304,7 @@ void NOR_erase_block_32k(I32U addr)
 	flash_tx_rx(SPI_MASTER_0, g_spi_tx_buf, 4, g_spi_rx_buf,  0, GPIO_SPI_0_CS_NFLASH);
 #endif
 	//wait for the operation finished
-	_wait_for_operation_completed();
+	_wait_for_operation_completed(BLOCK_ERASE_TIME_32K);
 	
 	if (!OTA_if_enabled()){
 	  if (!b_flash_PD_flag) {
@@ -330,7 +340,7 @@ void NOR_erase_block_64k(I32U addr)
 #endif
 	N_SPRINTF("[NFLASH] waiting ...");
 	//wait for the operation finished
-	_wait_for_operation_completed();
+	_wait_for_operation_completed(BLOCK_ERASE_TIME_64K);
 	N_SPRINTF("[NFLASH] completed!");
 	
 	if (!OTA_if_enabled()){
@@ -362,7 +372,7 @@ void NOR_ChipErase()
 	flash_tx_rx(SPI_MASTER_0, g_spi_tx_buf, 1,  g_spi_rx_buf,  0, GPIO_SPI_0_CS_NFLASH);
 #endif
 	//wait for the operation finished
-	_wait_for_operation_completed();
+	_wait_for_operation_completed(CHIP_ERASE_TIME);
 	
 	if (!OTA_if_enabled()){
 	  if (!b_flash_PD_flag) {

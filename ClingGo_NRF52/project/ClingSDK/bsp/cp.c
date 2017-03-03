@@ -452,37 +452,10 @@ static void _create_dev_info_msg()
         t->msg[t->msg_filling_offset++] = 0;
         t->msg[t->msg_filling_offset++] = (cling.system.reset_count >> 8) & 0xff;
         t->msg[t->msg_filling_offset++] = cling.system.reset_count & 0xff;
+				
+				gap_mgr->get_model_id(gap_mgr, &t->msg[t->msg_filling_offset], &length);
+				t->msg_filling_offset += length;
 
-#ifdef _CLINGBAND_NFC_MODEL_
-        // Add model number (Clingband NFC fixed model number: AU0923)
-        // Created on September 23, 2015
-        t->msg[t->msg_filling_offset++] = 'A';
-        t->msg[t->msg_filling_offset++] = 'U';
-        t->msg[t->msg_filling_offset++] = '0';
-        t->msg[t->msg_filling_offset++] = '9';
-        t->msg[t->msg_filling_offset++] = '2';
-        t->msg[t->msg_filling_offset++] = '3';
-#endif
-
-#ifdef _CLINGBAND_UV_MODEL_
-        // Add model number (Clingband UV fixed model number: AU0703)
-        t->msg[t->msg_filling_offset++] = 'A';
-        t->msg[t->msg_filling_offset++] = 'U';
-        t->msg[t->msg_filling_offset++] = '0';
-        t->msg[t->msg_filling_offset++] = '7';
-        t->msg[t->msg_filling_offset++] = '0';
-        t->msg[t->msg_filling_offset++] = '3';
-#endif
-
-#ifdef _CLING_DEV_RF_MODEL_
-        // Add model number (Clingband UV fixed model number: AU0703)
-        t->msg[t->msg_filling_offset++] = 'R';
-        t->msg[t->msg_filling_offset++] = 'F';
-        t->msg[t->msg_filling_offset++] = '0';
-        t->msg[t->msg_filling_offset++] = '1';
-        t->msg[t->msg_filling_offset++] = '6';
-        t->msg[t->msg_filling_offset++] = '7';
-#endif
         // Amount of minute streaming files
         t->msg[t->msg_filling_offset++] = FILE_exists_with_prefix((I8U *)"epoch", 5);
 
@@ -490,12 +463,9 @@ static void _create_dev_info_msg()
 //		sd_ble_gap_address_get(&mac_addr_t);
 				N_SPRINTF("[cp] get mac adress");
         t->msg[t->msg_filling_offset++] = 0x69;
-        t->msg[t->msg_filling_offset++] = mac_addr_t[0];
-        t->msg[t->msg_filling_offset++] = mac_addr_t[1];
-        t->msg[t->msg_filling_offset++] = mac_addr_t[2];
-        t->msg[t->msg_filling_offset++] = mac_addr_t[3];
-        t->msg[t->msg_filling_offset++] = mac_addr_t[4];
-        t->msg[t->msg_filling_offset++] = mac_addr_t[5];
+				gap_mgr->get_model_id(gap_mgr, &t->msg[t->msg_filling_offset], &length);
+				t->msg_filling_offset += length;
+
 
         t->msg_len = t->msg_filling_offset;
 
