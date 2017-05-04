@@ -24,6 +24,7 @@
 #include "sdk_common.h"
 #include "app_util_platform.h"
 #include <string.h>
+#include "main.h"
 
 
 /**
